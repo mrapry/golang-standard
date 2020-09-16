@@ -14,10 +14,15 @@ This repository explain implementation of Go for building multiple microservices
 
 ### Create new service
 ```
-make init service={{service_name}} modules={{module_a}},{{module_b}}
+make init service={{service_name}} modules={{module_a}},{{module_b}} gomod={{name_init_go_module}}
 ```
 
 ### Run service
 ```
-make run service={{service_name}}
+make run service={{service_name}} gomod={{name_init_go_module}}
+```
+
+### Clear service
+```
+make clear service={{service_name}} gomod={{name_init_go_module}}
 ```
