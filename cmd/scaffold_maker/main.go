@@ -88,9 +88,9 @@ func main() {
 	}
 
 	// init api
-	apiStructure := FileStructure{
-		TargetDir: "api/", IsDir: true, DataSource: data,
-	}
+	// apiStructure := FileStructure{
+	// 	TargetDir: "api/", IsDir: true, DataSource: data,
+	// }
 
 	// init configs
 	configsStructure := FileStructure{
@@ -182,22 +182,22 @@ func main() {
 			gomodInitStructure, configsStructure, cmdStructure, serviceStructure,
 		}
 
-	case "addmodule":
-		moduleStructure.Skip = true
-		serviceStructure.Skip = true
-		serviceStructure.Childs = []FileStructure{
-			moduleStructure,
-			{FromTemplate: true, DataSource: data, Source: serviceMainTemplate, FileName: "service.go"},
-		}
+	// case "addmodule":
+	// 	moduleStructure.Skip = true
+	// 	serviceStructure.Skip = true
+	// 	serviceStructure.Childs = []FileStructure{
+	// 		moduleStructure,
+	// 		{FromTemplate: true, DataSource: data, Source: serviceMainTemplate, FileName: "service.go"},
+	// 	}
 
-		apiStructure.Skip = true
-		// apiProtoStructure.Skip, apiGraphQLStructure.Skip = true, true
-		// apiStructure.Childs = []FileStructure{
-		// 	apiProtoStructure, apiGraphQLStructure,
-		// }
+	// 	// apiStructure.Skip = true
+	// 	// apiProtoStructure.Skip, apiGraphQLStructure.Skip = true, true
+	// 	// apiStructure.Childs = []FileStructure{
+	// 	// 	apiProtoStructure, apiGraphQLStructure,
+	// 	// }
 
-		baseDirectoryFile.Childs = []FileStructure{apiStructure, serviceStructure}
-		baseDirectoryFile.Skip = true
+	// 	baseDirectoryFile.Childs = []FileStructure{apiStructure, serviceStructure}
+	// 	baseDirectoryFile.Skip = true
 
 	default:
 		panic("invalid scope parameter")
