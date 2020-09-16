@@ -1,4 +1,4 @@
-# Backend Microservices
+# Golang Standart
 
 ## Made with
 <p align="center">
@@ -38,3 +38,6 @@ make run service={{service_name}} gomod={{name_init_go_module}}
 ```
 make clear service={{service_name}} gomod={{name_init_go_module}}
 ```
+
+### Note 
+Don`t forget to register module in internal service
