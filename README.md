@@ -12,6 +12,18 @@
 
 This repository explain implementation of Go for building multiple microservices using a single codebase. Using [Standard Golang Project Layout](https://github.com/golang-standards/project-layout) and [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
+
+### Go-Lib
+This service need [go-lib](https://github.com/mrapry/go-lib), and need add to private library in go
+```
+go env -w GOPRIVATE="github.com/mrapry/go-lib"
+```
+
+Install dependency:
+```
+$ env GIT_TERMINAL_PROMPT=1 go get github.com/mrapry/go-lib  //or
+$ go get github.com/mrapry/go-lib
+```
 ### Create new service
 ```
 make init service={{service_name}} modules={{module_a}},{{module_b}} gomod={{name_init_go_module}}
