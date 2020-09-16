@@ -11,11 +11,12 @@ USE_GRAPHQL=false
 ## Worker
 USE_KAFKA_CONSUMER=false
 USE_CRON_SCHEDULER=false
-USE_REDIS_SUBSCRIBER=true
+USE_REDIS_SUBSCRIBER=false
 USE_TASK_QUEUE_WORKER=false
+USE_JEAGER_TRACING = false
 
 ## Setting Port 
-HTTP_PORT=8000
+REST_HTTP_PORT=8000
 GRPC_PORT=8002
 
 
@@ -49,14 +50,14 @@ REDIS_WRITE_AUTH=
 
 ## Setting Kafka Connection
 KAFKA_BROKERS=localhost:9092
-KAFKA_CLIENT_ID={{.ServiceName}}
-KAFKA_CONSUMER_GROUP={{.ServiceName}}
+KAFKA_CLIENT_ID={{.ServiceName}}-service-client
+KAFKA_CONSUMER_GROUP={{.ServiceName}}-service-consumer-group
 
 
 ## Setting Tracing data with jeager, Graphql, and JsonShema
 JAEGER_TRACING_HOST=127.0.0.1:5775
-GRAPHQL_SCHEMA_DIR="api/{{.ServiceName}}/graphql"
-JSON_SCHEMA_DIR="api/{{.ServiceName}}/jsonschema"
+GRAPHQL_SCHEMA_DIR="api/graphql/"
+JSON_SCHEMA_DIR="api/jsonschema/"
 
 ## Additional env (if you have another env will be set in here)
 

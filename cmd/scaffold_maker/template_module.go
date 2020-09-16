@@ -3,13 +3,13 @@ package main
 const moduleMainTemplate = `package {{clean $.module}}
 
 import (
-	"{{$.LibraryAddress}}/internal/modules/{{$.module}}/delivery/graphqlhandler"
-	"{{$.LibraryAddress}}/internal/modules/{{$.module}}/delivery/grpchandler"
-	"{{$.LibraryAddress}}/internal/modules/{{$.module}}/delivery/resthandler"
-	"{{$.LibraryAddress}}/internal/modules/{{$.module}}/delivery/workerhandler"
-	"{{$.GoModules}}/pkg/codebase/factory/dependency"
-	"{{$.GoModules}}/pkg/codebase/interfaces"
-	"{{$.GoModules}}/pkg/codebase/factory/types"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/graphqlhandler"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/grpchandler"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/resthandler"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/workerhandler"
+	"{{$.LibraryAddress}}/pkg/codebase/factory/dependency"
+	"{{$.LibraryAddress}}/pkg/codebase/interfaces"
+	"{{$.LibraryAddress}}/pkg/codebase/factory/types"
 )
 
 const (

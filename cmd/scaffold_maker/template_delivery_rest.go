@@ -5,9 +5,9 @@ const deliveryRestTemplate = `package resthandler
 import (
 	"net/http"
 
-	"{{.LibraryAddress}}/pkg/codebase/interfaces"
-	"{{.LibraryAddress}}/pkg/helper"
-	"{{.LibraryAddress}}/pkg/wrapper"
+	"{{.LibraryAddress}}/codebase/interfaces"
+	helper "{{.LibraryAddress}}/golibhelper"
+	"{{.LibraryAddress}}/wrapper"
 	"github.com/labstack/echo"
 )
 

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	serviceName = "{{.GoModules}}"
+	serviceName = "{{.ServiceName}}"
 )
 
 func main() {

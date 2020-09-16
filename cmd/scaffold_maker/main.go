@@ -127,7 +127,7 @@ func main() {
 	for _, moduleName := range modules {
 		moduleName = strings.TrimSpace(moduleName)
 		data.Modules = append(data.Modules, moduleName)
-		dataSource := map[string]string{"PackageName": packageName, "ServiceName": serviceName, "module": moduleName}
+		dataSource := map[string]string{"PackageName": data.PackageName, "ServiceName": data.ServiceName, "module": moduleName, "GoModules": data.GoModules, "LibraryAddress": data.LibraryAddress}
 
 		//init clean architecture module directory
 		cleanArchModuleDir := []FileStructure{
@@ -172,6 +172,8 @@ func main() {
 			},
 		}...)
 	}
+
+	serviceStructure.Childs = append(serviceStructure.Childs, moduleStructure)
 
 	var baseDirectoryFile FileStructure
 	switch scope {
