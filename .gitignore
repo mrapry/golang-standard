@@ -1,0 +1,10 @@
+.env
+master-service
+bin
+vendor
+coverage.txt
+go.mod.tmp
+.idea
+hooman
+.vscode
+__debug_bin
