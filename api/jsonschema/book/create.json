@@ -6,10 +6,14 @@
       "name": {
         "type": "string",
         "minLength": 3
+      },
+      "isbn": {
+        "type": "string",
+        "minLength": 3
       }
     },
     "required": [
-      "name"
+      "name", "isbn"
     ],
     "additionalProperties": true
   }

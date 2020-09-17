@@ -15,7 +15,7 @@
         },
         "orderBy": {
             "type": "string",
-            "enum": ["name"]
+            "enum": ["name","isbn"]
         },
         "sort": {
             "type": "string",

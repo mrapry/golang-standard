@@ -180,6 +180,7 @@ func Test_bookUsecaseImpl_Create(t *testing.T) {
 			wantError: true,
 			dataUsecase: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			find: &golibshared.Result{Data: &domain.Book{}},
 		},
@@ -187,6 +188,7 @@ func Test_bookUsecaseImpl_Create(t *testing.T) {
 			wantError: false,
 			dataUsecase: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			find:   &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 			insert: &golibshared.Result{Data: &domain.Book{}},
@@ -241,6 +243,7 @@ func Test_bookUsecaseImpl_Update(t *testing.T) {
 			wantError: true,
 			dataUsecase: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			findByID: &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 		},
@@ -248,6 +251,7 @@ func Test_bookUsecaseImpl_Update(t *testing.T) {
 			wantError: false,
 			dataUsecase: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			ID:       "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{}},
@@ -303,6 +307,7 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: true,
 			}},
 			remove: &golibshared.Result{Data: &domain.Book{}},
@@ -312,6 +317,7 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: false,
 			}},
 		},
@@ -377,6 +383,7 @@ func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: false,
 			}},
 			restore: &golibshared.Result{Data: &domain.Book{}},
@@ -386,6 +393,7 @@ func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: true,
 			}},
 		},
@@ -404,6 +412,7 @@ func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: false,
 			}},
 			restore: &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},

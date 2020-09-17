@@ -52,7 +52,7 @@ func (r *bookRepoMongDB) FindAll(ctx context.Context, filter *domain.Filter) <-c
 		where := []bson.M{}
 
 		// set search
-		fields := []string{"name"}
+		fields := []string{"name", "isbn"}
 		where = filter.SetSearch(where, fields)
 
 		// set show all
@@ -115,7 +115,7 @@ func (r *bookRepoMongDB) Count(ctx context.Context, filter *domain.Filter) <-cha
 		where := []bson.M{}
 
 		// set search
-		fields := []string{"name"}
+		fields := []string{"name", "isbn"}
 		where = filter.SetSearch(where, fields)
 
 		// set show all

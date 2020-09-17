@@ -8,3 +8,4 @@ go.mod.tmp
 hooman
 .vscode
 __debug_bin
+main_service.go

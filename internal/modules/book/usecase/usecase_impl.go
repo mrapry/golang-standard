@@ -23,7 +23,7 @@ type bookUsecaseImpl struct {
 	validator interfaces.Validator
 }
 
-// NewBookUsecase create new member usecase
+// NewBookUsecase create new book usecase
 func NewBookUsecase(repo *repository.Repository, sdk sdk.SDK, validator interfaces.Validator) BookUsecase {
 	return &bookUsecaseImpl{repo: repo, sdk: sdk, validator: validator}
 }
@@ -45,7 +45,7 @@ func (uc *bookUsecaseImpl) FindAll(ctx context.Context, filter *domain.Filter) (
 	// transform data to struct
 	book := repoRes.Data.([]*domain.Book)
 
-	// count member
+	// count book
 	countRes := <-uc.repo.Book.Count(ctx, filter)
 	if countRes.Error != nil {
 		logger.Log(zapcore.ErrorLevel, countRes.Error.Error(), opName, "count_book")
@@ -98,9 +98,9 @@ func (uc *bookUsecaseImpl) Create(ctx context.Context, data *domain.Book) (*doma
 	data.IsActive = true
 
 	// get book by name
-	repoResCheckName := <-uc.repo.Book.Find(ctx, domain.Book{Name: data.Name})
+	repoResCheckName := <-uc.repo.Book.Find(ctx, domain.Book{ISBN: data.ISBN})
 	if repoResCheckName.Error == nil {
-		err = fmt.Errorf(shared.ErrorDataAlreadyExist, "book")
+		err = fmt.Errorf(shared.ErrorDataAlreadyExist, "isbn book")
 		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "find_book")
 		return nil, err
 	}

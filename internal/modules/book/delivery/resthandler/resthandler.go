@@ -49,7 +49,7 @@ func (h *RestHandler) Mount(root *echo.Group) {
 }
 
 func (h *RestHandler) findAll(c echo.Context) error {
-	opName := "book_resthandler.get_all"
+	opName := "book_resthandler.find_all"
 	ctx := c.Request().Context()
 	tracer := tracer.StartTrace(ctx, opName)
 	defer tracer.Finish()
@@ -76,7 +76,7 @@ func (h *RestHandler) findAll(c echo.Context) error {
 }
 
 func (h *RestHandler) findByID(c echo.Context) error {
-	opName := "book_resthandler.get_all"
+	opName := "book_resthandler.find_by_id"
 	ctx := c.Request().Context()
 
 	tracer := tracer.StartTrace(ctx, opName)
@@ -103,7 +103,7 @@ func (h *RestHandler) findByID(c echo.Context) error {
 }
 
 func (h *RestHandler) create(c echo.Context) error {
-	opName := "book_resthandler.get_all"
+	opName := "book_resthandler.create"
 	ctx := c.Request().Context()
 
 	tracer := tracer.StartTrace(ctx, opName)

@@ -26,7 +26,10 @@ func LoadConfigs(baseCfg *config.Config) (deps dependency.Dependency) {
 			sdk.SetAuthService(authSdk),
 		)
 
+		//init mongo
 		mongoDeps := database.InitMongoDB(ctx)
+		//init redis
+		redisDeps := database.InitRedis()
 
 		// inject all service dependencies
 		deps = dependency.InitDependency(
@@ -34,10 +37,11 @@ func LoadConfigs(baseCfg *config.Config) (deps dependency.Dependency) {
 			dependency.SetValidator(validator.NewValidator()),
 			dependency.SetSDK(sdkDeps),
 			dependency.SetMongoDatabase(mongoDeps),
+			dependency.SetRedisPool(redisDeps),
 			// ... add more dependencies
 		)
 
-		return []interfaces.Closer{mongoDeps} // throw back to config for close connection when application shutdown
+		return []interfaces.Closer{mongoDeps, redisDeps} // throw back to config for close connection when application shutdown
 	})
 
 	return deps

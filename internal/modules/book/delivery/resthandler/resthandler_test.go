@@ -216,31 +216,34 @@ func TestRestHandler_create(t *testing.T) {
 		payload   *domain.Book
 		otherData *otherData
 	}{
-		shared.SetTestcaseName(1, "positive rest member handler create new book"): {
+		shared.SetTestcaseName(1, "positive rest book handler create new book"): {
 			payload: &domain.Book{
 				Name: "Payjo Suherman",
+				ISBN: gofakeit.SSN(),
 			},
 			register: &register{result: &domain.Book{}},
 		},
-		shared.SetTestcaseName(2, "positive rest member handler create new book handling usecase example name is alredy exist"): {
+		shared.SetTestcaseName(2, "positive rest book handler create new book handling usecase example name is alredy exist"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			register: &register{err: fmt.Errorf(golibshared.ErrorGeneral)},
 		},
-		shared.SetTestcaseName(3, "negative rest member handler create new book validate body"): {
+		shared.SetTestcaseName(3, "negative rest book handler create new book validate body"): {
 			payload: &domain.Book{},
 		},
-		shared.SetTestcaseName(4, "negative rest member handler create new book unmarshal"): {
+		shared.SetTestcaseName(4, "negative rest book handler create new book unmarshal"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			otherData: &otherData{
 				username: "matmat",
 			},
 		},
-		shared.SetTestcaseName(5, "negative rest member handler create new book validate body"): {
-			payload: &domain.Book{Name: "P"},
+		shared.SetTestcaseName(5, "negative rest book handler create new book validate body"): {
+			payload: &domain.Book{Name: "P", ISBN: gofakeit.SSN()},
 		},
 	}
 	for name, test := range testCase {
@@ -297,40 +300,45 @@ func TestRestHandler_update(t *testing.T) {
 		ID        string
 		otherData *otherData
 	}{
-		shared.SetTestcaseName(1, "positive rest member handler update book"): {
+		shared.SetTestcaseName(1, "positive rest book handler update book"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			ID:     "5f62fcee09cd352630be5237",
 			update: &update{result: &domain.Book{}},
 		},
-		shared.SetTestcaseName(2, "positive rest member handler update book usecase handling"): {
+		shared.SetTestcaseName(2, "positive rest book handler update book usecase handling"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			ID:     "5f62fcee09cd352630be5237",
 			update: &update{err: fmt.Errorf(golibshared.ErrorGeneral)},
 		},
-		shared.SetTestcaseName(3, "positive rest member handler update book error ID Required"): {
+		shared.SetTestcaseName(3, "positive rest book handler update book error ID Required"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 		},
-		shared.SetTestcaseName(4, "positive rest member handler update book ID invalid"): {
+		shared.SetTestcaseName(4, "positive rest book handler update book ID invalid"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			ID: gofakeit.Name(),
 		},
 
-		shared.SetTestcaseName(5, "positive rest member handler update book ID atribut minlength"): {
+		shared.SetTestcaseName(5, "positive rest book handler update book ID atribut minlength"): {
 			payload: &domain.Book{
 				Name: "P",
 			},
 		},
-		shared.SetTestcaseName(5, "positive rest member handler update book ID unmarshal"): {
+		shared.SetTestcaseName(5, "positive rest book handler update book ID unmarshal"): {
 			payload: &domain.Book{
 				Name: gofakeit.Name(),
+				ISBN: gofakeit.SSN(),
 			},
 			otherData: &otherData{
 				username: gofakeit.Name(),

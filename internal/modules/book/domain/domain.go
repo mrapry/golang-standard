@@ -14,6 +14,7 @@ const (
 type Book struct {
 	mgm.IDField `bson:",inline"`
 	Name        string `bson:"name" json:"name"`
+	ISBN        string `bson:"isbn" json:"isbn,omitempty"`
 	Version     int    `bson:"version" json:"version,omitempty"`
 	IsActive    bool   `bson:"isActive" json:"isActive,omitempty"`
 }
@@ -32,4 +33,5 @@ type Filter struct {
 var FieldMap = map[string]string{
 	"id":   "_id",
 	"name": "name",
+	"isbn": "isbn",
 }
