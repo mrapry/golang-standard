@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"master-service/internal/modules/book/domain"
 	"master-service/internal/modules/book/repository"
 	"master-service/pkg/shared"
+	"time"
 
 	"github.com/mrapry/go-lib/codebase/interfaces"
 	"github.com/mrapry/go-lib/golibshared"
@@ -21,11 +23,12 @@ type bookUsecaseImpl struct {
 	repo      *repository.Repository
 	sdk       sdk.SDK
 	validator interfaces.Validator
+	cache     interfaces.Store
 }
 
 // NewBookUsecase create new book usecase
-func NewBookUsecase(repo *repository.Repository, sdk sdk.SDK, validator interfaces.Validator) BookUsecase {
-	return &bookUsecaseImpl{repo: repo, sdk: sdk, validator: validator}
+func NewBookUsecase(repo *repository.Repository, sdk sdk.SDK, validator interfaces.Validator, cache interfaces.Store) BookUsecase {
+	return &bookUsecaseImpl{repo: repo, sdk: sdk, validator: validator, cache: cache}
 }
 
 func (uc *bookUsecaseImpl) FindAll(ctx context.Context, filter *domain.Filter) (listBook []*domain.Book, meta *golibshared.Meta, err error) {
@@ -70,6 +73,13 @@ func (uc *bookUsecaseImpl) FindByID(ctx context.Context, ID string) (*domain.Boo
 		err error
 	)
 
+	//check ID from cache redis. if found return!
+	if cacheData, err := uc.cache.Get(ctx, ID); err == nil {
+		var book domain.Book
+		json.Unmarshal([]byte(cacheData), &book)
+		return &book, nil
+	}
+
 	// get book
 	repoRes := <-uc.repo.Book.FindByID(ctx, ID)
 	if repoRes.Error != nil {
@@ -80,6 +90,12 @@ func (uc *bookUsecaseImpl) FindByID(ctx context.Context, ID string) (*domain.Boo
 
 	// transform data to struct
 	book := repoRes.Data.(*domain.Book)
+
+	go func() {
+		//set data if the redis not
+		b, _ := json.Marshal(book)
+		uc.cache.Set(ctx, book.ID.Hex(), b, 100*time.Minute)
+	}()
 
 	return book, nil
 }
@@ -148,6 +164,12 @@ func (uc *bookUsecaseImpl) Update(ctx context.Context, data *domain.Book, ID str
 
 	// transform data to struct
 	bookUpdate := repoRes.Data.(*domain.Book)
+
+	go func() {
+		//remove data in redis with key
+		uc.cache.Delete(ctx, ID)
+	}()
+
 	return bookUpdate, nil
 }
 
@@ -183,6 +205,11 @@ func (uc *bookUsecaseImpl) RemoveByID(ctx context.Context, ID string) error {
 		return repoRes.Error
 	}
 
+	go func() {
+		//remove data in redis with key
+		uc.cache.Delete(ctx, ID)
+	}()
+
 	return nil
 }
 
@@ -216,6 +243,11 @@ func (uc *bookUsecaseImpl) RestoreByID(ctx context.Context, ID string) error {
 		logger.Log(zapcore.ErrorLevel, repoRes.Error.Error(), opName, "update_book")
 		return repoRes.Error
 	}
+
+	go func() {
+		//remove data in redis with key
+		uc.cache.Delete(ctx, ID)
+	}()
 
 	return nil
 }

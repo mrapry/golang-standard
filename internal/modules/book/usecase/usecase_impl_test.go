@@ -9,6 +9,7 @@ import (
 	pkgMock "master-service/pkg/mock/mocks"
 	"master-service/pkg/shared"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
 
@@ -26,6 +27,7 @@ var (
 	bookUsecaseMocks BookUsecase
 	bookRepoMocks    *bookRepoMock.BookRepository
 	validatorMocks   *pkgMock.Validator
+	storageMocks     *pkgMock.Storage
 	authMocks        *authMock.ServiceAuth
 )
 
@@ -48,8 +50,10 @@ func bookUsecaseMock() {
 	//set validator mock
 	validatorMocks = &pkgMock.Validator{}
 
+	storageMocks = &pkgMock.Storage{}
+
 	// set usecase
-	bookUsecaseMocks = NewBookUsecase(repo, sdk, validatorMocks)
+	bookUsecaseMocks = NewBookUsecase(repo, sdk, validatorMocks, storageMocks)
 
 }
 
@@ -122,24 +126,39 @@ func Test_bookUsecaseImpl_FindAll(t *testing.T) {
 }
 
 func Test_bookUsecaseImpl_FindByID(t *testing.T) {
+	type redis struct {
+		book  *domain.Book
+		Error error
+	}
 	testCase := map[string]struct {
-		wantError bool
-		ID        string
-		find      *golibshared.Result
+		wantError     bool
+		ID            string
+		redis, redis2 *redis
+		find          *golibshared.Result
 	}{
-		shared.SetTestcaseName(1, "positive find by id"): {
+		shared.SetTestcaseName(1, "positive find by id get from redis"): {
 			wantError: false,
 			ID:        "5f62fcee09cd352630be5237",
-			find:      &golibshared.Result{Data: &domain.Book{}},
+			redis:     &redis{book: &domain.Book{}},
 		},
-		shared.SetTestcaseName(2, "negative find by id"): {
+		shared.SetTestcaseName(2, "positive find by id get from database and save redis"): {
+			wantError: false,
+			ID:        "5f62fcee09cd352630be5237",
+			redis:     &redis{Error: fmt.Errorf(golibshared.ErrorGeneral)},
+			find:      &golibshared.Result{Data: &domain.Book{}},
+			redis2:    &redis{book: &domain.Book{}},
+		},
+
+		shared.SetTestcaseName(3, "negative find by id"): {
 			wantError: true,
 			ID:        "12345",
+			redis:     &redis{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 			find:      &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 		},
 		shared.SetTestcaseName(3, "negative find by id"): {
 			wantError: true,
 			ID:        "",
+			redis:     &redis{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 			find:      &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},
 		},
 	}
@@ -147,9 +166,21 @@ func Test_bookUsecaseImpl_FindByID(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			bookUsecaseMock()
 
+			if test.redis != nil {
+				var data string = mock.Anything
+				var err error = test.redis.Error
+				storageMocks.On("Get", mock.Anything, mock.Anything).Return(data, err).Once()
+			}
+
 			if test.find != nil {
 				result := shared.SetMockerySharedResult(*test.find)
 				bookRepoMocks.On("FindByID", mock.Anything, mock.Anything).Return(result).Once()
+			}
+
+			if test.redis2 != nil {
+				var data string = mock.Anything
+				var err error = test.redis2.Error
+				storageMocks.On("Set", mock.Anything, mock.Anything, mock.Anything, 100*time.Minute).Return(data, err).Once()
 			}
 
 			// set usecase
@@ -232,12 +263,17 @@ func Test_bookUsecaseImpl_Create(t *testing.T) {
 }
 
 func Test_bookUsecaseImpl_Update(t *testing.T) {
+	type redis struct {
+		book  *domain.Book
+		Error error
+	}
 	testCase := map[string]struct {
 		wantError   bool
 		dataUsecase *domain.Book
 		ID          string
 		findByID    *golibshared.Result
 		update      *golibshared.Result
+		redis       *redis
 	}{
 		shared.SetTestcaseName(1, "negative ID is not found"): {
 			wantError: true,
@@ -256,6 +292,7 @@ func Test_bookUsecaseImpl_Update(t *testing.T) {
 			ID:       "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{}},
 			update:   &golibshared.Result{Data: &domain.Book{}},
+			redis:    &redis{book: &domain.Book{}},
 		},
 		shared.SetTestcaseName(3, "data book is null"): {
 			wantError:   true,
@@ -279,6 +316,12 @@ func Test_bookUsecaseImpl_Update(t *testing.T) {
 				bookRepoMocks.On("Save", mock.Anything, mock.Anything).Return(result).Once()
 			}
 
+			if test.redis != nil {
+				var data string = mock.Anything
+				var err error = test.redis.Error
+				storageMocks.On("Delete", mock.Anything, mock.Anything).Return(data, err).Once()
+			}
+
 			// set usecase
 			usecase := bookUsecaseMocks
 
@@ -296,11 +339,16 @@ func Test_bookUsecaseImpl_Update(t *testing.T) {
 }
 
 func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
+	type redis struct {
+		book  *domain.Book
+		Error error
+	}
 	testCase := map[string]struct {
 		wantError bool
 		ID        string
 		findByID  *golibshared.Result
 		remove    *golibshared.Result
+		redis     *redis
 	}{
 		shared.SetTestcaseName(0, "Positive case, ID ditemukan dan data tidak dalam keadaan non active"): {
 			wantError: false,
@@ -311,6 +359,7 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 				IsActive: true,
 			}},
 			remove: &golibshared.Result{Data: &domain.Book{}},
+			redis:  &redis{book: &domain.Book{}},
 		},
 		shared.SetTestcaseName(1, "Data sudah dalam keadaan non active"): {
 			wantError: true,
@@ -336,6 +385,7 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 			ID:        "5f62fcee09cd352630be5237",
 			findByID: &golibshared.Result{Data: &domain.Book{
 				Name:     gofakeit.Name(),
+				ISBN:     gofakeit.SSN(),
 				IsActive: true,
 			}},
 			remove: &golibshared.Result{Error: fmt.Errorf(golibshared.ErrorGeneral)},
@@ -355,6 +405,12 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 				bookRepoMocks.On("Save", mock.Anything, mock.Anything).Return(result).Once()
 			}
 
+			if test.redis != nil {
+				var data string = mock.Anything
+				var err error = test.redis.Error
+				storageMocks.On("Delete", mock.Anything, mock.Anything).Return(data, err).Once()
+			}
+
 			// set usecase
 			usecase := bookUsecaseMocks
 
@@ -372,11 +428,16 @@ func Test_bookUsecaseImpl_RemoveByID(t *testing.T) {
 }
 
 func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
+	type redis struct {
+		book  *domain.Book
+		Error error
+	}
 	testCase := map[string]struct {
 		wantError bool
 		ID        string
 		findByID  *golibshared.Result
 		restore   *golibshared.Result
+		redis     *redis
 	}{
 		shared.SetTestcaseName(0, "Positive case, ID ditemukan dan data tidak dalam keadaan non active"): {
 			wantError: false,
@@ -387,6 +448,7 @@ func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
 				IsActive: false,
 			}},
 			restore: &golibshared.Result{Data: &domain.Book{}},
+			redis:   &redis{book: &domain.Book{}},
 		},
 		shared.SetTestcaseName(1, "Data sudah dalam keadaan non active"): {
 			wantError: true,
@@ -430,6 +492,12 @@ func Test_bookUsecaseImpl_RestoreByID(t *testing.T) {
 			if test.restore != nil {
 				result := shared.SetMockerySharedResult(*test.restore)
 				bookRepoMocks.On("Save", mock.Anything, mock.Anything).Return(result).Once()
+			}
+
+			if test.redis != nil {
+				var data string = mock.Anything
+				var err error = test.redis.Error
+				storageMocks.On("Delete", mock.Anything, mock.Anything).Return(data, err).Once()
 			}
 
 			// set usecase

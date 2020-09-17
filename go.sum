@@ -162,8 +162,8 @@ github.com/mattn/goveralls v0.0.6/go.mod h1:h8b4ow6FxSPMQHF6o2ve3qsclnffZjYTNEKm
 github.com/mitchellh/mapstructure v1.3.3 h1:SzB1nHZ2Xi+17FP0zVQBHIZqvwRN9408fJO8h+eeNA8=
 github.com/mitchellh/mapstructure v1.3.3/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
-github.com/mrapry/go-lib v1.0.3 h1:XRTFtcjVs7rJAF4xrx3WJW6qVMIT1buc9ON4fYGfbSU=
-github.com/mrapry/go-lib v1.0.3/go.mod h1:EVRZywgUPD9+rw21JhbYWBHae5OtALSNhbBpQ3ZAI+0=
+github.com/mrapry/go-lib v1.0.5 h1:5TiSHNGIIOrSq45MPGDYKg2Vuds4BF7rWy7FE7i+qew=
+github.com/mrapry/go-lib v1.0.5/go.mod h1:EVRZywgUPD9+rw21JhbYWBHae5OtALSNhbBpQ3ZAI+0=
 github.com/opentracing/opentracing-go v1.1.0 h1:pWlfV3Bxv7k65HYwkikxat0+s3pV4bsqf19k25Ur8rU=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/pelletier/go-toml v1.4.0/go.mod h1:PN7xzY2wHTK0K9p34ErDQMlFxa51Fk0OUruD3k1mMwo=
