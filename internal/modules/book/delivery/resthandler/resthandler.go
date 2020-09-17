@@ -2,6 +2,7 @@ package resthandler
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"master-service/internal/modules/book/domain"
 	"master-service/internal/modules/book/usecase"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/mrapry/go-lib/logger"
 	"github.com/mrapry/go-lib/tracer"
 	"github.com/mrapry/go-lib/wrapper"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -37,13 +39,13 @@ func NewRestHandler(bookUsecase usecase.BookUsecase, mw interfaces.Middleware, v
 func (h *RestHandler) Mount(root *echo.Group) {
 	v1Root := root.Group(helper.V1)
 
-	book := v1Root.Group("/book")
-	// book.GET("", h.hello)
+	book := v1Root.Group("/book", h.mw.HTTPBasicAuth(false))
 	book.GET("", h.findAll)
-}
-
-func (h *RestHandler) hello(c echo.Context) error {
-	return wrapper.NewHTTPResponse(http.StatusOK, "Hello, from service: master-service, module: book").JSON(c.Response())
+	book.GET("/:id", h.findByID)
+	book.POST("", h.create)
+	book.PUT("/:id", h.update)
+	book.DELETE("/:id", h.delete)
+	book.PATCH("/:id", h.restore)
 }
 
 func (h *RestHandler) findAll(c echo.Context) error {
@@ -71,4 +73,140 @@ func (h *RestHandler) findAll(c echo.Context) error {
 		return wrapper.NewHTTPResponse(http.StatusBadRequest, err.Error()).JSON(c.Response())
 	}
 	return wrapper.NewHTTPResponse(http.StatusOK, "Sukses mengambil data book", result, meta).JSON(c.Response())
+}
+
+func (h *RestHandler) findByID(c echo.Context) error {
+	opName := "book_resthandler.get_all"
+	ctx := c.Request().Context()
+
+	tracer := tracer.StartTrace(ctx, opName)
+	defer tracer.Finish()
+	ctx = tracer.Context()
+
+	id := c.Param("id")
+	if id == "" {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "id tidak boleh kosong").JSON(c.Response())
+	}
+
+	_, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "invalid id").JSON(c.Response())
+	}
+
+	result, err := h.bookUsecase.FindByID(ctx, id)
+	if err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "usecase_error")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal mendapatkan data book", err.Error()).JSON(c.Response())
+	}
+
+	return wrapper.NewHTTPResponse(http.StatusOK, "Sukses", result).JSON(c.Response())
+}
+
+func (h *RestHandler) create(c echo.Context) error {
+	opName := "book_resthandler.get_all"
+	ctx := c.Request().Context()
+
+	tracer := tracer.StartTrace(ctx, opName)
+	defer tracer.Finish()
+	ctx = tracer.Context()
+
+	body, _ := ioutil.ReadAll(c.Request().Body)
+	if err := h.validator.ValidateDocument("book/create", body); err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "validate_payload")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal dalam validasi data", err.Error()).JSON(c.Response())
+	}
+
+	var payload domain.Book
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, err.Error()).JSON(c.Response())
+	}
+
+	result, err := h.bookUsecase.Create(ctx, &payload)
+	if err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "usecase_error")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal menyimpan data book baru", err.Error()).JSON(c.Response())
+	}
+
+	return wrapper.NewHTTPResponse(http.StatusCreated, "Sukses menyimpan data user", result).JSON(c.Response())
+}
+
+func (h *RestHandler) update(c echo.Context) error {
+	opName := "book_resthandler.update"
+	ctx := c.Request().Context()
+
+	tracer := tracer.StartTrace(ctx, opName)
+	defer tracer.Finish()
+	ctx = tracer.Context()
+
+	body, _ := ioutil.ReadAll(c.Request().Body)
+	if err := h.validator.ValidateDocument("book/update", body); err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "validate_payload")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal dalam validasi data", err.Error()).JSON(c.Response())
+	}
+
+	var payload domain.Book
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, err.Error()).JSON(c.Response())
+	}
+
+	ID := c.Param("id")
+	if ID == "" {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "id tidak boleh kosong").JSON(c.Response())
+	}
+	_, err := primitive.ObjectIDFromHex(ID)
+	if err != nil {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "invalid id").JSON(c.Response())
+	}
+
+	result, err := h.bookUsecase.Update(ctx, &payload, ID)
+	if err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "usecase_error")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal update data book baru", err.Error()).JSON(c.Response())
+	}
+
+	return wrapper.NewHTTPResponse(http.StatusCreated, "Sukses update data user", result).JSON(c.Response())
+}
+
+func (h *RestHandler) delete(c echo.Context) error {
+	opName := "book_resthandler.delete"
+	ctx := c.Request().Context()
+
+	tracer := tracer.StartTrace(ctx, opName)
+	defer tracer.Finish()
+	ctx = tracer.Context()
+
+	id := c.Param("id")
+	if id == "" {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "id tidak boleh kosong").JSON(c.Response())
+	}
+
+	err := h.bookUsecase.RemoveByID(ctx, id)
+	if err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "usecase_error")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal delete data book", err.Error()).JSON(c.Response())
+	}
+
+	return wrapper.NewHTTPResponse(http.StatusOK, "Sukses delete data").JSON(c.Response())
+}
+
+func (h *RestHandler) restore(c echo.Context) error {
+	opName := "book_resthandler.restore"
+	ctx := c.Request().Context()
+
+	tracer := tracer.StartTrace(ctx, opName)
+	defer tracer.Finish()
+	ctx = tracer.Context()
+
+	id := c.Param("id")
+	if id == "" {
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "id tidak boleh kosong").JSON(c.Response())
+	}
+
+	err := h.bookUsecase.RestoreByID(ctx, id)
+	if err != nil {
+		logger.Log(zapcore.ErrorLevel, err.Error(), opName, "usecase_error")
+		return wrapper.NewHTTPResponse(http.StatusBadRequest, "Gagal merestore data book", err.Error()).JSON(c.Response())
+	}
+
+	return wrapper.NewHTTPResponse(http.StatusOK, "Sukses restore data").JSON(c.Response())
 }

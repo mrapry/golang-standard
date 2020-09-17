@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "JSON Schema for update book",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "additionalProperties": false
+  }
+  

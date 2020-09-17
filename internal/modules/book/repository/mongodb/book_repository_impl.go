@@ -184,6 +184,40 @@ func (r *bookRepoMongDB) Find(ctx context.Context, obj domain.Book) <-chan golib
 	return output
 }
 
+func (r *bookRepoMongDB) FindByID(ctx context.Context, ID string) <-chan golibshared.Result {
+	output := make(chan golibshared.Result)
+
+	go func() {
+		defer close(output)
+
+		// set model
+		model := &domain.Book{}
+
+		// set collection name
+		collName := db.CollName(model)
+
+		// set collection
+		coll := db.NewCollection(r.readDB, collName)
+
+		// set tracer mongo
+		trace := &tracer.TraceMongo{
+			Collection: collName,
+			Method:     tracer.FindOne,
+			Filter:     ID,
+		}
+		trace.SetTags(ctx)
+
+		if err := coll.FindByID(ID, model); err != nil {
+			output <- golibshared.Result{Error: err}
+			return
+		}
+
+		output <- golibshared.Result{Data: model}
+	}()
+
+	return output
+}
+
 func (r *bookRepoMongDB) Save(ctx context.Context, data *domain.Book) <-chan golibshared.Result {
 	output := make(chan golibshared.Result)
 

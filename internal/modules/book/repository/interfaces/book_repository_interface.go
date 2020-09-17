@@ -12,6 +12,7 @@ type BookRepository interface {
 	FindAll(ctx context.Context, filter *domain.Filter) <-chan golibshared.Result
 	Count(ctx context.Context, filter *domain.Filter) <-chan golibshared.Result
 	Find(ctx context.Context, obj domain.Book) <-chan golibshared.Result
+	FindByID(tx context.Context, id string) <-chan golibshared.Result
 	Save(ctx context.Context, data *domain.Book) <-chan golibshared.Result
 	Insert(ctx context.Context, newData *domain.Book) <-chan golibshared.Result
 }
