@@ -1,4 +1,4 @@
-# Golang Standart
+# Golang Standard
 
 ## Made with
 <p align="center">
