@@ -22,6 +22,7 @@ type param struct {
 	GoModules      string
 	LibraryAddress string
 	ServiceName    string
+	Petik          string
 	Modules        []string
 }
 
@@ -67,6 +68,7 @@ func main() {
 	data.GoModules = goMod
 	data.LibraryAddress = libraryAddress
 	data.ServiceName = serviceName
+	data.Petik = "`"
 
 	tpl = template.New(packageName)
 
@@ -87,10 +89,20 @@ func main() {
 		},
 	}
 
-	// init api
-	// apiStructure := FileStructure{
-	// 	TargetDir: "api/", IsDir: true, DataSource: data,
-	// }
+	//init api
+	apiStructure := FileStructure{
+		TargetDir: "api/", IsDir: true, DataSource: data,
+	}
+
+	//init jsonschmea
+	apiJsonSchemaStructure := FileStructure{
+		TargetDir: "jsonschema/", IsDir: true, DataSource: data,
+	}
+
+	// init pkg
+	pkgStructure := FileStructure{
+		TargetDir: "pkg/", IsDir: true, DataSource: data,
+	}
 
 	// init configs
 	configsStructure := FileStructure{
@@ -127,7 +139,7 @@ func main() {
 	for _, moduleName := range modules {
 		moduleName = strings.TrimSpace(moduleName)
 		data.Modules = append(data.Modules, moduleName)
-		dataSource := map[string]string{"PackageName": data.PackageName, "ServiceName": data.ServiceName, "module": moduleName, "GoModules": data.GoModules, "LibraryAddress": data.LibraryAddress}
+		dataSource := map[string]string{"PackageName": data.PackageName, "ServiceName": data.ServiceName, "module": moduleName, "GoModules": data.GoModules, "LibraryAddress": data.LibraryAddress, "Petik": data.Petik}
 
 		//init clean architecture module directory
 		cleanArchModuleDir := []FileStructure{
@@ -135,51 +147,97 @@ func main() {
 				TargetDir: "delivery/", IsDir: true,
 				Childs: []FileStructure{
 					{TargetDir: "resthandler/", IsDir: true, Childs: []FileStructure{
-						{FromTemplate: true, DataSource: dataSource, Source: deliveryRestTemplate, FileName: "resthandler.go"},
+						{FromTemplate: true, DataSource: dataSource, Source: DeliveryRestTemplate, FileName: "resthandler.go"},
+						{FromTemplate: true, DataSource: dataSource, Source: DeliveryRestTestTemplate, FileName: "resthandler_test.go"},
 					}},
 				},
 			},
 			{
 				TargetDir: "domain/", IsDir: true,
 				Childs: []FileStructure{
-					{FromTemplate: true, FileName: "domain.go"},
+					{FromTemplate: true, DataSource: dataSource, Source: DomainTemplate, FileName: "domain.go"},
+					{FromTemplate: true, DataSource: dataSource, Source: DomainTestTemplate, FileName: "domain_test.go"},
 				},
 			},
 			{
 				TargetDir: "repository/", IsDir: true,
 				Childs: []FileStructure{
-					{TargetDir: "interfaces/", IsDir: true},
-					{FromTemplate: true, FileName: "repository.go"},
+					{TargetDir: "interfaces/", IsDir: true, Childs: []FileStructure{
+						{TargetDir: "mock/", IsDir: true, Childs: []FileStructure{
+							{FromTemplate: true, DataSource: dataSource, Source: MockRepositoryTemplate, FileName: strings.Title(moduleName) + "Repository.go"},
+						}},
+						{FromTemplate: true, DataSource: dataSource, Source: InterfaceRepositoryTemplate, FileName: moduleName + "_repository_interface.go"},
+					}},
+					{TargetDir: "mongodb/", IsDir: true, Childs: []FileStructure{
+						{FromTemplate: true, DataSource: dataSource, Source: ImplementRepositoryTemplate, FileName: moduleName + "repository_impl.go"},
+					}},
+
+					{FromTemplate: true, DataSource: dataSource, Source: RepositoryTemplate, FileName: "repository.go"},
 				},
 			},
 			{
 				TargetDir: "usecase/", IsDir: true,
 				Childs: []FileStructure{
-					{FromTemplate: true, FileName: "usecase.go"},
-					{FromTemplate: true, FileName: "usecase_impl.go"},
+					{TargetDir: "mock/", IsDir: true, Childs: []FileStructure{
+						{FromTemplate: true, DataSource: dataSource, Source: MockUsecaseTemplate, FileName: strings.Title(moduleName) + "Usecase.go"},
+					}},
+					{FromTemplate: true, DataSource: dataSource, Source: InterfaceUsecaseTemplate, FileName: "usecase.go"},
+					{FromTemplate: true, DataSource: dataSource, Source: ImplementUsecaseTemplate, FileName: "usecase_impl.go"},
+					{FromTemplate: true, DataSource: dataSource, Source: TestUsecaseTemplate, FileName: "usecase_impl_test.go"},
 				},
 			},
 		}
 
+		fmt.Println("ini di hit")
 		moduleStructure.Childs = append(moduleStructure.Childs, []FileStructure{
 			{
 				TargetDir: moduleName + "/", IsDir: true,
 				Childs: append(cleanArchModuleDir,
 					FileStructure{
-						FromTemplate: true, DataSource: dataSource, Source: moduleMainTemplate, FileName: "module.go",
+						FromTemplate: true, DataSource: dataSource, Source: ModuleTemplate, FileName: "module.go",
 					},
 				),
 			},
 		}...)
+
+		apiJsonSchemaStructure.Childs = append(apiJsonSchemaStructure.Childs, FileStructure{
+			TargetDir: moduleName, IsDir: true,
+			Childs: []FileStructure{
+				{FromTemplate: true, DataSource: dataSource, Source: SchemaCreateTemplate, FileName: "create.json"},
+				{FromTemplate: true, DataSource: dataSource, Source: SchemaGetAllTemplate, FileName: "get_all.json"},
+				{FromTemplate: true, DataSource: dataSource, Source: SchemaUpdateTemplate, FileName: "update.json"},
+			},
+		})
 	}
 
 	serviceStructure.Childs = append(serviceStructure.Childs, moduleStructure)
+
+	apiStructure.Childs = []FileStructure{
+		apiJsonSchemaStructure,
+	}
+
+	// dataSourcePkg := map[string]string{"PackageName": data.PackageName, "ServiceName": data.ServiceName, "GoModules": data.GoModules, "LibraryAddress": data.LibraryAddress, "Petik": data.Petik}
+	pkgStructure.Childs = append(pkgStructure.Childs, FileStructure{
+		Childs: []FileStructure{
+			{TargetDir: "mock/", IsDir: true, Childs: []FileStructure{
+				{TargetDir: "mocks/", IsDir: true, Childs: []FileStructure{
+					{FromTemplate: true, DataSource: data, Source: MockStorageTemplate, FileName: "Storage.go"},
+					{FromTemplate: true, DataSource: data, Source: MockValidatorTemplate, FileName: "Validator.go"},
+				}},
+			}},
+			{TargetDir: "shared/", IsDir: true, Childs: []FileStructure{
+				{FromTemplate: true, DataSource: data, Source: MockTestTemplate, FileName: "mock_test.go"},
+				{FromTemplate: true, DataSource: data, Source: MockSharedTemplate, FileName: "mock.go"},
+				{FromTemplate: true, DataSource: data, Source: ResponseSharedTemplate, FileName: "response.go"},
+			}},
+		},
+	})
 
 	var baseDirectoryFile FileStructure
 	switch scope {
 	case "initservice":
 		baseDirectoryFile.Childs = []FileStructure{
-			gomodInitStructure, configsStructure, cmdStructure, serviceStructure,
+			gomodInitStructure, configsStructure, cmdStructure, serviceStructure, apiStructure, pkgStructure,
 		}
 
 	// case "addmodule":

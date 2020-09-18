@@ -1,15 +1,16 @@
 package main
 
-const moduleMainTemplate = `package {{clean $.module}}
+//ModuleTemplate module template
+const ModuleTemplate = `package {{$.module}}
 
 import (
-	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/graphqlhandler"
-	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/grpchandler"
 	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/resthandler"
-	"{{$.GoModules}}/internal/modules/{{$.module}}/delivery/workerhandler"
-	"{{$.LibraryAddress}}/pkg/codebase/factory/dependency"
-	"{{$.LibraryAddress}}/pkg/codebase/interfaces"
-	"{{$.LibraryAddress}}/pkg/codebase/factory/types"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/repository"
+	"{{$.GoModules}}/internal/modules/{{$.module}}/usecase"
+
+	"{{$.LibraryAddress}}/codebase/factory/dependency"
+	"{{$.LibraryAddress}}/codebase/factory/types"
+	"{{$.LibraryAddress}}/codebase/interfaces"
 )
 
 const (
@@ -19,26 +20,16 @@ const (
 
 // Module model
 type Module struct {
-	restHandler    *resthandler.RestHandler
-	grpcHandler    *grpchandler.GRPCHandler
-	graphqlHandler *graphqlhandler.GraphQLHandler
-
-	workerHandlers map[types.Worker]interfaces.WorkerHandler
+	restHandler *resthandler.RestHandler
 }
 
 // NewModule module constructor
 func NewModule(deps dependency.Dependency) *Module {
-	var mod Module
-	mod.restHandler = resthandler.NewRestHandler(deps.GetMiddleware())
-	mod.grpcHandler = grpchandler.NewGRPCHandler(deps.GetMiddleware())
-	mod.graphqlHandler = graphqlhandler.NewGraphQLHandler(deps.GetMiddleware())
+	repo := repository.NewRepository(deps.GetMongoDatabase().ReadDB(), deps.GetMongoDatabase().WriteDB())
+	uc := usecase.New{{clean (upper $.module)}}Usecase(repo, deps.GetSDK(), deps.GetValidator(), deps.GetRedisPool().Store())
 
-	mod.workerHandlers = map[types.Worker]interfaces.WorkerHandler{
-		types.Kafka:           workerhandler.NewKafkaHandler(),
-		types.Scheduler:       workerhandler.NewCronHandler(),
-		types.RedisSubscriber: workerhandler.NewRedisHandler(),
-		types.TaskQueue:       workerhandler.NewTaskQueueHandler(),
-	}
+	var mod Module
+	mod.restHandler = resthandler.NewRestHandler(uc, deps.GetMiddleware(), deps.GetValidator())
 
 	return &mod
 }
@@ -50,17 +41,17 @@ func (m *Module) RestHandler() interfaces.EchoRestHandler {
 
 // GRPCHandler method
 func (m *Module) GRPCHandler() interfaces.GRPCHandler {
-	return m.grpcHandler
+	return nil
 }
 
 // GraphQLHandler method
 func (m *Module) GraphQLHandler() interfaces.GraphQLHandler {
-	return m.graphqlHandler
+	return nil
 }
 
 // WorkerHandler method
 func (m *Module) WorkerHandler(workerType types.Worker) interfaces.WorkerHandler {
-	return m.workerHandlers[workerType]
+	return nil
 }
 
 // Name get module name
@@ -68,7 +59,6 @@ func (m *Module) Name() types.Module {
 	return Name
 }
 `
-
 const defaultFile = `package {{$.packageName}}`
 
 func defaultDataSource(fileName string) []byte {
