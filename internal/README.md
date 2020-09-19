@@ -1,4 +1,4 @@
-# `Register Module Exanoke`
+# `Register Module Example`
 
 Dont forget to register module in internal service `/internal/service.go`
 ```
